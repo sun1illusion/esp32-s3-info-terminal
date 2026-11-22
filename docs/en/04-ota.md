@@ -1,6 +1,6 @@
 # OTA Updates
 
-[中文版](../zh/04-OTA升级实现.md) · [Back to README](../../README.md)
+[中文版](../zh/04-OTA升级实现.md) · [Back to README](../../README.en.md)
 
 ---
 

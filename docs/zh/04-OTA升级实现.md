@@ -1,6 +1,6 @@
 # OTA 升级实现
 
-[English](../en/04-ota.md) · [返回 README](../../README.zh-CN.md)
+[English](../en/04-ota.md) · [返回 README](../../README.md)
 
 ---
 

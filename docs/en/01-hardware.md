@@ -1,6 +1,6 @@
 # Hardware and Wiring
 
-[中文版](../zh/01-硬件与接线.md) · [Back to README](../../README.md)
+[中文版](../zh/01-硬件与接线.md) · [Back to README](../../README.en.md)
 
 ---
 

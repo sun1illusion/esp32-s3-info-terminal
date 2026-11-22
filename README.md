@@ -1,163 +1,163 @@
-# ESP32-S3 Information Terminal
+# ESP32-S3 多功能信息终端
 
-A touch-screen information dashboard built on **ESP32-S3 + FreeRTOS + LVGL 9.6**, featuring a weather widget, remote GPIO control over HTTP, an on-device system monitor, and **A/B OTA updates with automatic rollback**.
+基于 **ESP32-S3 + FreeRTOS + LVGL 9.6** 的触摸屏信息终端，集成天气查询、网页远程控制、设备自监控，以及**带自动回滚的 A/B 分区 OTA 升级**。
 
-[中文文档](README.zh-CN.md) · [Documentation](#documentation)
+[English](README.en.md) · [文档索引](#文档)
 
 ---
 
-## Overview
+## 项目简介
 
-This is a standalone desk terminal that displays weather, provides 8 channels of GPIO control from both the touch screen and a phone browser, reports its own runtime health, and can update its firmware over Wi-Fi without a cable.
+一台常驻桌面的信息终端：显示天气、支持 8 路 GPIO 的屏幕与手机双端控制、上报自身运行状况，并且可以**不插线**通过 Wi-Fi 更新固件。
 
-The whole system runs **without PSRAM** — the module used here has a hardware defect that makes external RAM unusable, so every byte is accounted for against the ~320 KB of internal SRAM available to the application.
+整个系统在**无 PSRAM** 的前提下运行——所用模组的片外 RAM 存在硬件缺陷不可用，因此每一字节内存都要与内部 SRAM（应用可用约 320KB）精打细算。
 
-| Metric | Value |
+| 指标 | 数值 |
 |---|---|
-| Firmware size | 1.58 MB |
-| Free heap (after Wi-Fi + UI init) | 88 KB |
-| Largest free block | 31 KB |
-| LVGL memory pool | 72 KB (peak 52 KB) |
-| FreeRTOS tasks | 13 |
-| UI screens | 9 |
-| Full-screen refresh rate | 16 fps (worst case, full-screen animation) |
+| 固件大小 | 1.58 MB |
+| 可用堆（Wi-Fi + UI 初始化后） | 88 KB |
+| 最大连续空闲块 | 31 KB |
+| LVGL 内存池 | 72 KB（峰值 52 KB） |
+| FreeRTOS 任务数 | 13 |
+| 界面页数 | 9 |
+| 全屏刷新率 | 16 fps（全屏动画最坏情况） |
 
-## Features
+## 功能
 
-- **Weather** — HTTPS fetch from a public weather API, JSON parsing, 4-day forecast
-- **Remote control** — built-in HTTP server serves a mobile web UI; 8 GPIO channels controllable from screen or phone
-- **System monitor** — live RAM/Flash ring gauges, per-task CPU usage and stack headroom
-- **OTA updates** — upload a `.bin` from the browser; dual-bank layout with SHA-256 verification and bootloader rollback
-- **Dual display** — 240×320 SPI main screen plus a 128×32 I²C OLED status display on independent buses
-- **Screen timeout** — backlight off after 30 s of inactivity, instant wake on touch (Wi-Fi stays connected)
-- **Self-diagnostics** — heap watermark logging, runtime font-coverage check, FPS probe
+- **天气** — HTTPS 拉取公共天气接口，JSON 解析，四天预报
+- **远程控制** — 内置 HTTP 服务器提供手机网页；8 路 GPIO 可从屏幕或手机操作
+- **系统监控** — RAM/Flash 环形图，逐任务 CPU 占用与栈余量
+- **OTA 升级** — 浏览器上传 `.bin`；双分区布局 + SHA-256 校验 + Bootloader 回滚
+- **双屏显示** — 240×320 SPI 主屏 + 128×32 I²C OLED 副屏，两条总线独立互不阻塞
+- **息屏省电** — 30 秒无触摸关闭背光，触摸立即唤醒（Wi-Fi 保持在线）
+- **自诊断** — 堆水位定时日志、运行时字库完整性自检、帧率探针
 
-## Hardware
+## 硬件
 
-| Component | Part | Interface |
+| 部件 | 型号 | 接口 |
 |---|---|---|
-| MCU | ESP32-S3 (16 MB flash, **PSRAM disabled**) | — |
-| Main display | ILI9341, 240×320, 2.8" | SPI2 @ 40 MHz |
-| Touch | XPT2046 resistive | SPI2 (shared), IRQ on GPIO47 |
-| Status display | SSD1306, 128×32 OLED | I²C0, SCL=GPIO42, SDA=GPIO41 |
-| Audio | MAX98357A I²S amplifier | I²S |
-| Backlight | LEDC PWM | GPIO1 |
-| GPIO outputs | 8 channels | GPIO 8, 9, 10, 11, 12, 13, 14, 18 |
+| 主控 | ESP32-S3（16MB Flash，**PSRAM 关闭**） | — |
+| 主屏 | ILI9341，240×320，2.8 寸 | SPI2 @ 40MHz |
+| 触摸 | XPT2046 电阻屏 | SPI2（共用），IRQ 接 GPIO47 |
+| 副屏 | SSD1306，128×32 OLED | I²C0，SCL=GPIO42，SDA=GPIO41 |
+| 音频 | MAX98357A I²S 功放 | I²S |
+| 背光 | LEDC PWM 调光 | GPIO1 |
+| GPIO 输出 | 8 路 | GPIO 8/9/10/11/12/13/14/18 |
 
-Full pin map and wiring notes: [`docs/en/01-hardware.md`](docs/en/01-hardware.md)
+完整引脚表与接线注意事项见 [`docs/zh/01-硬件与接线.md`](docs/zh/01-硬件与接线.md)
 
-## Software stack
+## 软件栈
 
-| Layer | Component |
+| 层次 | 组件 |
 |---|---|
 | SDK | ESP-IDF v5.5.6 |
-| RTOS | FreeRTOS (SMP, dual-core) |
-| GUI | LVGL 9.6 + `esp_lvgl_port` |
-| Networking | lwIP, `esp_http_server`, mbedTLS (certificate bundle) |
-| Storage | NVS (settings, Wi-Fi credentials) |
-| OTA | `esp_ota_ops` with `BOOTLOADER_APP_ROLLBACK_ENABLE` |
+| 操作系统 | FreeRTOS（SMP 双核） |
+| 图形 | LVGL 9.6 + `esp_lvgl_port` |
+| 网络 | lwIP、`esp_http_server`、mbedTLS（证书包） |
+| 存储 | NVS（设置项、Wi-Fi 凭据） |
+| 升级 | `esp_ota_ops` + `BOOTLOADER_APP_ROLLBACK_ENABLE` |
 
-## Architecture
+## 架构
 
 ```
 ┌──────────────────────────────────────────────┐
-│  UI layer      ui_home / ui_weather /        │
+│  UI 层         ui_home / ui_weather /        │
 │                ui_settings / ui_net /        │
 │                ui_sysmon                     │
 ├──────────────────────────────────────────────┤
-│  App layer     app_io / app_ota /            │
+│  应用层        app_io / app_ota /            │
 │                app_sysinfo / app_screen /    │
 │                app_diag                      │
 ├──────────────────────────────────────────────┤
-│  Network       net_wifi / net_weather /      │
+│  网络层        net_wifi / net_weather /      │
 │                net_time / net_web            │
 ├──────────────────────────────────────────────┤
-│  Board         board_lcd / board_touch /     │
+│  驱动层        board_lcd / board_touch /     │
 │                board_oled / board_backlight  │
 ├──────────────────────────────────────────────┤
 │  ESP-IDF       FreeRTOS / LVGL / lwIP / NVS  │
 └──────────────────────────────────────────────┘
 ```
 
-Task design, memory budget and design trade-offs: [`docs/en/02-architecture.md`](docs/en/02-architecture.md)
+任务划分、内存预算与设计取舍见 [`docs/zh/02-软件架构.md`](docs/zh/02-软件架构.md)
 
-## Getting started
+## 编译与烧写
 
-### Prerequisites
+### 前置条件
 
-- ESP-IDF **v5.5.6** installed and exported
-- A board matching the pin map above (or adjust `main/app_config.h`)
+- 已安装并 export 的 **ESP-IDF v5.5.6**
+- 与上表引脚一致的硬件（或自行改 `main/app_config.h`）
 
-### Configure your credentials
+### 先填自己的凭据
 
-Wi-Fi credentials and the web control token are **not** committed to this repository. Before building, edit `main/app_config.h`:
+Wi-Fi 账号密码与网页控制 token **不会**提交到仓库。编译前请修改 `main/app_config.h`：
 
 ```c
 #define WIFI_SSID           "YOUR_WIFI_SSID"
 #define WIFI_PASS           "YOUR_WIFI_PASSWORD"
-#define WEB_TOKEN           "CHANGE_ME_TOKEN"     /* web UI password; leave "" to disable */
+#define WEB_TOKEN           "CHANGE_ME_TOKEN"     /* 网页控制密码，留空则不校验 */
 ```
 
-### Build and flash
+### 编译烧写
 
 ```bash
 idf.py set-target esp32s3
 idf.py build
-idf.py -p <PORT> flash monitor
+idf.py -p <串口号> flash monitor
 ```
 
-On first boot the device connects to Wi-Fi and prints its IP address:
+首次启动后设备会连接 Wi-Fi 并打印 IP：
 
 ```
-I (3029) ui_net: Web UI: http://192.168.1.100/
+I (3029) ui_net: 手机访问地址: http://192.168.1.100/
 ```
 
-Open that address on a phone, appending `?k=<WEB_TOKEN>` on first visit:
+手机首次访问需带上 token 参数：
 
 ```
 http://192.168.1.100/?k=CHANGE_ME_TOKEN
 ```
 
-### OTA update
+### OTA 升级
 
-Open the web UI, scroll to **Firmware update**, select a `big_screen.bin` and upload. The device writes to the inactive partition, verifies it, then reboots into the new image. If the new firmware fails to confirm itself within 30 s, the bootloader rolls back automatically.
+打开网页，滑到底部「固件升级」，选择 `big_screen.bin` 上传。设备写入备用分区、校验通过后重启进入新固件；若新固件 30 秒内未自确认，Bootloader 自动回滚。
 
-Details and measured timings: [`docs/en/04-ota.md`](docs/en/04-ota.md)
+原理与实测数据见 [`docs/zh/04-OTA升级实现.md`](docs/zh/04-OTA升级实现.md)
 
-## Project structure
+## 目录结构
 
 ```
 .
 ├── main/
-│   ├── Board/          Hardware drivers (LCD, touch, OLED, backlight, audio)
-│   ├── Network/        Wi-Fi, SNTP, weather API, HTTP server
-│   ├── UI/             LVGL screens
-│   ├── app_*.c/h       Application logic (IO, OTA, sysinfo, diagnostics)
-│   ├── main.c          Initialisation and task orchestration
-│   └── myfont_16.c     Generated Chinese bitmap font (296 glyphs)
-├── tools/              Font generation / verification, serial capture
-├── docs/               English and Chinese documentation
-├── partitions.csv      Custom partition table (otadata + dual OTA banks)
-└── sdkconfig           Full configuration for reproducible builds
+│   ├── Board/          硬件驱动（LCD / 触摸 / OLED / 背光 / 音频）
+│   ├── Network/        网络（Wi-Fi / SNTP / 天气 / HTTP 服务）
+│   ├── UI/             LVGL 界面
+│   ├── app_*.c/h       应用逻辑（IO / OTA / 系统信息 / 诊断）
+│   ├── main.c          初始化与任务编排
+│   └── myfont_16.c     生成的中文点阵字库（296 个码点）
+├── tools/              字库生成与校验、串口抓取脚本
+├── docs/               中英文文档
+├── partitions.csv      自定义分区表（otadata + 双 OTA 分区）
+└── sdkconfig           完整配置，便于复现构建
 ```
 
-## Key technical decisions
+## 关键技术点
 
-**Running without PSRAM.** The module's external RAM is unusable due to a silicon defect, so the LVGL pool, draw buffers and all application data live in internal SRAM. Reducing the draw buffer from 60 to 40 lines recovered 18.75 KB with **zero** frame-rate impact — the bottleneck is the 33 ms LVGL refresh period, not the SPI transfer.
+**无 PSRAM 运行。** 模组片外 RAM 因芯片缺陷不可用，LVGL 内存池、绘图缓冲与全部业务数据都落在内部 SRAM 上。把绘图缓冲从 60 行降到 40 行回收了 18.75KB，而帧率**毫无变化**——瓶颈是 LVGL 的 33ms 刷新周期，不是 SPI 传输。
 
-**OTA with a real safety net.** Two 4 MB application partitions plus an 8 KB `otadata` region. A new image is written to the inactive partition, verified by SHA-256, then marked for boot. It must call `esp_ota_mark_app_valid_cancel_rollback()` within 30 s of first boot, otherwise the bootloader marks it `ABORTED` and falls back — verified in practice, not just in theory.
+**真正兜底的 OTA。** 两个 4MB 应用分区加 8KB `otadata`。新固件写入非运行分区、SHA-256 校验通过后才标记启动；首次启动后必须在 30 秒内调用 `esp_ota_mark_app_valid_cancel_rollback()` 确认，否则 Bootloader 将其标记为 `ABORTED` 并回退——这一点经过实测验证，不只是理论。
 
-**Diagnostics as a first-class feature.** Rather than discovering problems by looking at the screen, the firmware reports them: heap watermark every 10 minutes, per-task CPU and stack headroom on screen, and a startup scan that reports any character missing from the bitmap font (LVGL renders missing glyphs as blank boxes without raising an error).
+**把诊断当功能做。** 与其盯着屏幕找问题，不如让固件自己报告：每 10 分钟输出一次堆水位、屏幕上实时显示任务 CPU 与栈余、启动时扫描全部文本并报出字库缺失的字符（LVGL 遇缺字只画空白框，不会报错）。
 
-## Documentation
+## 文档
 
-| Document | English | 中文 |
+| 文档 | 中文 | English |
 |---|---|---|
-| Hardware & wiring | [en](docs/en/01-hardware.md) | [zh](docs/zh/01-硬件与接线.md) |
-| Architecture & tasks | [en](docs/en/02-architecture.md) | [zh](docs/zh/02-软件架构.md) |
-| Development log & pitfalls | [en](docs/en/03-development-log.md) | [zh](docs/zh/03-开发历程与踩坑.md) |
-| OTA implementation | [en](docs/en/04-ota.md) | [zh](docs/zh/04-OTA升级实现.md) |
+| 硬件与接线 | [zh](docs/zh/01-硬件与接线.md) | [en](docs/en/01-hardware.md) |
+| 软件架构与任务 | [zh](docs/zh/02-软件架构.md) | [en](docs/en/02-architecture.md) |
+| 开发历程与踩坑 | [zh](docs/zh/03-开发历程与踩坑.md) | [en](docs/en/03-development-log.md) |
+| OTA 升级实现 | [zh](docs/zh/04-OTA升级实现.md) | [en](docs/en/04-ota.md) |
 
-## License
+## 许可
 
 [MIT](LICENSE)

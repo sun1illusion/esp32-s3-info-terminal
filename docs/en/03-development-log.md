@@ -1,6 +1,6 @@
 # Development Log and Pitfalls
 
-[中文版](../zh/03-开发历程与踩坑.md) · [Back to README](../../README.md)
+[中文版](../zh/03-开发历程与踩坑.md) · [Back to README](../../README.en.md)
 
 ---
 

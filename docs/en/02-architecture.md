@@ -1,6 +1,6 @@
 # Software Architecture
 
-[中文版](../zh/02-软件架构.md) · [Back to README](../../README.md)
+[中文版](../zh/02-软件架构.md) · [Back to README](../../README.en.md)
 
 ---
 
