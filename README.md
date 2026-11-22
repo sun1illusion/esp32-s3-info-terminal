@@ -32,6 +32,26 @@
 - **息屏省电** — 30 秒无触摸关闭背光，触摸立即唤醒（Wi-Fi 保持在线）
 - **自诊断** — 堆水位定时日志、运行时字库完整性自检、帧率探针
 
+## 界面展示
+
+<table>
+  <tr>
+    <td align="center" width="33%"><img src="docs/images/home.jpg" width="200"><br><sub>主页 · 功能入口</sub></td>
+    <td align="center" width="33%"><img src="docs/images/weather.jpg" width="200"><br><sub>天气 · 实时与四天预报</sub></td>
+    <td align="center" width="33%"><img src="docs/images/gpio-control.jpg" width="200"><br><sub>IO 管理 · 8 路 GPIO</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/images/system-monitor.jpg" width="200"><br><sub>系统监控 · RAM/Flash 与任务占用</sub></td>
+    <td align="center"><img src="docs/images/settings.jpg" width="200"><br><sub>设置 · 亮度与音量</sub></td>
+    <td align="center"><img src="docs/images/wifi-network.jpg" width="200"><br><sub>WiFi · 扫描与切换</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/images/serial-status.jpg" width="200"><br><sub>串口状态 · 引脚与外设信息</sub></td>
+    <td align="center"><img src="docs/images/web-ui.jpg" width="200"><br><sub>手机端 · HTTP 远程控制</sub></td>
+    <td align="center"><img src="docs/images/oled-status.jpg" width="200"><br><sub>OLED 副屏 · 常亮天气</sub></td>
+  </tr>
+</table>
+
 ## 硬件
 
 | 部件 | 型号 | 接口 |

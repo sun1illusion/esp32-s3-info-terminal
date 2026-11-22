@@ -32,6 +32,26 @@ The whole system runs **without PSRAM** — the module used here has a hardware 
 - **Screen timeout** — backlight off after 30 s of inactivity, instant wake on touch (Wi-Fi stays connected)
 - **Self-diagnostics** — heap watermark logging, runtime font-coverage check, FPS probe
 
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center" width="33%"><img src="docs/images/home.jpg" width="200"><br><sub>Home · feature menu</sub></td>
+    <td align="center" width="33%"><img src="docs/images/weather.jpg" width="200"><br><sub>Weather · current + 4-day forecast</sub></td>
+    <td align="center" width="33%"><img src="docs/images/gpio-control.jpg" width="200"><br><sub>IO panel · 8 GPIO channels</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/images/system-monitor.jpg" width="200"><br><sub>System monitor · RAM/Flash &amp; per-task load</sub></td>
+    <td align="center"><img src="docs/images/settings.jpg" width="200"><br><sub>Settings · brightness and volume</sub></td>
+    <td align="center"><img src="docs/images/wifi-network.jpg" width="200"><br><sub>Wi-Fi · scan and switch network</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/images/serial-status.jpg" width="200"><br><sub>Serial status · pin and bus map</sub></td>
+    <td align="center"><img src="docs/images/web-ui.jpg" width="200"><br><sub>Mobile · HTTP remote control</sub></td>
+    <td align="center"><img src="docs/images/oled-status.jpg" width="200"><br><sub>OLED side display · always-on weather</sub></td>
+  </tr>
+</table>
+
 ## Hardware
 
 | Component | Part | Interface |
